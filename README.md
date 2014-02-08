@@ -1,4 +1,4 @@
-ethernetdecode
+ethernetdecode [![Build Status](https://drone.io/github.com/PreetamJinka/ethernetdecode/status.png)](https://drone.io/github.com/PreetamJinka/ethernetdecode/latest)
 ====
 
 A tiny Go package for decoding ethernet frame headers into
