@@ -6,9 +6,11 @@ import (
 	"net"
 )
 
-type HardwareAddrs struct {
+type EthernetHeader struct {
 	Source      net.HardwareAddr
 	Destination net.HardwareAddr
+	VlanTag     uint32
+	EtherType   uint16
 }
 
 type IpHeader interface {
@@ -72,29 +74,32 @@ func (h TcpHeader) Protocol() Protocol {
 
 // Decode decodes an ethernet frame header and returns
 // an IP header and a TCP or UDP header.
-func Decode(header []byte) (HardwareAddrs, IpHeader, ProtocolHeader) {
-	hwaddr := HardwareAddrs{
+func Decode(header []byte) (EthernetHeader, IpHeader, ProtocolHeader) {
+	ethhdr := EthernetHeader{
 		Source:      net.HardwareAddr(header[0:6]),
 		Destination: net.HardwareAddr(header[6:12]),
 	}
 
 	// Check for IPv4
 	if header[12] == 8 && header[13] == 0 {
+
+		ethhdr.EtherType = 0x0800
+
 		iphdr := Ipv4Header{}
 		binary.Read(bytes.NewBuffer(header[14:]), binary.BigEndian, &iphdr)
 
 		if iphdr.Protocol == 6 {
 			tcphdr := TcpHeader{}
 			binary.Read(bytes.NewBuffer(header[34:]), binary.BigEndian, &tcphdr)
-			return hwaddr, iphdr, tcphdr
+			return ethhdr, iphdr, tcphdr
 		}
 
 		if iphdr.Protocol == 17 {
 			udphdr := UdpHeader{}
 			binary.Read(bytes.NewBuffer(header[34:]), binary.BigEndian, &udphdr)
-			return hwaddr, iphdr, udphdr
+			return ethhdr, iphdr, udphdr
 		}
 	}
 
-	return hwaddr, nil, nil
+	return ethhdr, nil, nil
 }
