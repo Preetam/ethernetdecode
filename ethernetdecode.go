@@ -34,6 +34,19 @@ func (h Ipv4Header) IpVersion() int {
 	return 4
 }
 
+type Ipv6Header struct {
+	VersionTrafficClassFlowLabel uint32
+	PayloadLength                uint16
+	NextHeader                   uint8
+	HopLimit                     uint8
+	Source                       [16]byte
+	Destination                  [16]byte
+}
+
+func (h Ipv6Header) IpVersion() int {
+	return 6
+}
+
 type Protocol uint8
 
 const (
@@ -81,7 +94,7 @@ func Decode(header []byte) (EthernetHeader, IpHeader, ProtocolHeader) {
 	}
 
 	// Check for IPv4
-	if header[12] == 8 && header[13] == 0 {
+	if header[12] == 0x8 && header[13] == 0x0 {
 
 		ethhdr.EtherType = 0x0800
 
@@ -97,6 +110,26 @@ func Decode(header []byte) (EthernetHeader, IpHeader, ProtocolHeader) {
 		if iphdr.Protocol == 17 {
 			udphdr := UdpHeader{}
 			binary.Read(bytes.NewBuffer(header[34:]), binary.BigEndian, &udphdr)
+			return ethhdr, iphdr, udphdr
+		}
+	}
+
+	// Check for IPv6
+	if header[12] == 0x86 && header[13] == 0xDD {
+		ethhdr.EtherType = 0x86DD
+
+		iphdr := Ipv6Header{}
+		binary.Read(bytes.NewBuffer(header[14:]), binary.BigEndian, &iphdr)
+
+		if iphdr.NextHeader == 6 {
+			tcphdr := TcpHeader{}
+			binary.Read(bytes.NewBuffer(header[54:]), binary.BigEndian, &tcphdr)
+			return ethhdr, iphdr, tcphdr
+		}
+
+		if iphdr.NextHeader == 17 {
+			udphdr := UdpHeader{}
+			binary.Read(bytes.NewBuffer(header[54:]), binary.BigEndian, &udphdr)
 			return ethhdr, iphdr, udphdr
 		}
 	}
