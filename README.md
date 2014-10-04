@@ -1,3 +1,7 @@
+Please use my [protodecode](https://github.com/PreetamJinka/protodecode) package instead.
+
+----
+
 ethernetdecode [![Build Status](https://drone.io/github.com/PreetamJinka/ethernetdecode/status.png)](https://drone.io/github.com/PreetamJinka/ethernetdecode/latest)
 ====
 
