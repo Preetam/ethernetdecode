@@ -1,4 +1,4 @@
-Please use my [protodecode](https://github.com/PreetamJinka/protodecode) package instead.
+Please use my [proto](https://github.com/PreetamJinka/proto) package instead.
 
 ----
 
